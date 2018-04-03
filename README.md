@@ -7,6 +7,14 @@ Ambiente de trabalho para experimentação, em que, baseado no método de desenv
 
 ## Estrutura do Repositório
 
+```
+- data
+- journal
++ .gitignore
++ LICENSE
++ README.md
+```
+
 ### Data
 
 Diretório para os arquivos de dataset e seus respectivos arquivos fonte, escritos em python, com o código necessário para gerar um novo dataset.
@@ -32,5 +40,7 @@ Os arquivos devem ter a estrutura `YYYY-MM-DD-[usuario-github]-[descrição 2-4 
 ---
 
 Ludiico
+
 Departamento de Computação
+
 Universidade Federal de Sergipe
