@@ -110,12 +110,12 @@ def parse_estado(estado):
 
 def parse_ocupacao(ocupacao):
     id = parse_inteiro(ocupacao)
-    return id if (id >= 0 and id <= 999) else 0
+    return id if (id and (id >= 0 and id <= 999)) else 0
 
 def parse_nacionalidade(nacionalidade):
     id = parse_inteiro(nacionalidade)
-    return id if (id >= 0 and id <= 4) else 0
+    return id if (id and (id >= 0 and id <= 4)) else 0
 
 def parse_grau_instrucao(grau_instrucao):
     id = parse_inteiro(grau_instrucao)
-    return id if (id >= 0 and id <= 8) else 0
+    return id if (id and (id >= 0 and id <= 8)) else 0
