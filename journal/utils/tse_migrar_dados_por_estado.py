@@ -53,44 +53,17 @@ def migrar_dados_candidato(ano):
         cursor = cnx.cursor(buffered=True)
 
         for candidato in candidatos.itertuples():
-            # Verificar se o candidato já está cadastrado
-            query = ("SELECT id FROM candidato WHERE "
-                     "cpf = %(cpf)s AND titulo_eleitoral = %(titulo_eleitoral)s")
-            atributos = {
-                'cpf': parsers.parse_cpf(candidato.cpf),
-                'titulo_eleitoral': parsers.parse_titulo_eleitoral(candidato.titulo_eleitoral)
-            }
+            candidato_id = _get_candidato_id(
+                cpf=candidato.cpf,
+                titulo_eleitoral=candidato.titulo_eleitoral,
+                cnx=cnx,
+                cursor=cursor)
 
-            try:
-                cursor.execute(query, atributos)
-            except:
-                print(candidato)
-                print(query)
-                cursor.close()
-                cnx.close()
-                raise
-
-            resultados = cursor.fetchall()
-            candidato_id = resultados[0][0] if len(resultados) > 0 else 0
-
-            # Buscar id da cidade
-            cidade = parsers.parse_cidade(candidato.cidade)
-            sigla_estado = parsers.parse_estado(candidato.estado)
-            query = ("SELECT id FROM cidade WHERE "
-                     "nome = \"" + cidade + "\" AND "
-                     "estado_id = (SELECT id FROM estado WHERE sigla = '" + sigla_estado + "')")
-
-            try:
-                cursor.execute(query)
-            except:
-                print(candidato)
-                print(query)
-                cursor.close()
-                cnx.close()
-                raise
-
-            cidades = cursor.fetchall()
-            cidade_id = cidades[0][0] if len(cidades) > 0 else None
+            cidade_id = _get_cidade_id(
+                cidade=candidato.cidade,
+                sigla_estado=candidato.estado,
+                cnx=cnx,
+                cursor=cursor)
 
             email = parsers.parse_email(candidato.email) if ('email' in candidatos.columns) else None
 
@@ -161,6 +134,50 @@ def migrar_dados_candidatura(ano):
     print('To be done!')
 
 
+def _get_candidato_id(cpf, titulo_eleitoral, cnx, cursor):
+    # Verificar se o candidato já está cadastrado
+    query = ("SELECT id FROM candidato WHERE "
+             "cpf = %(cpf)s AND titulo_eleitoral = %(titulo_eleitoral)s")
+    parametros = {
+        'cpf': parsers.parse_cpf(cpf),
+        'titulo_eleitoral': parsers.parse_titulo_eleitoral(titulo_eleitoral)
+    }
+
+    try:
+        cursor.execute(query, parametros)
+    except:
+        print(query)
+        cursor.close()
+        cnx.close()
+        raise
+
+    resultados = cursor.fetchall()
+    candidato_id = resultados[0][0] if len(resultados) > 0 else 0
+
+    return candidato_id
+
+def _get_cidade_id(cidade, sigla_estado, cnx, cursor):
+    # Buscar id da cidade
+    query = ("SELECT id FROM cidade WHERE "
+             "nome = %(cidade)s AND "
+             "estado_id = (SELECT id FROM estado WHERE sigla = %(sigla_estado)s)")
+    parametros = {
+        'cidade': parsers.parse_cidade(cidade),
+        'sigla_estado': parsers.parse_estado(sigla_estado)
+    }
+
+    try:
+        cursor.execute(query, parametros)
+    except:
+        print(query)
+        cursor.close()
+        cnx.close()
+        raise
+
+    cidades = cursor.fetchall()
+    cidade_id = cidades[0][0] if len(cidades) > 0 else None
+
+    return cidade_id
 
 def get_colunas_candidato(ano):
     padrao = [
