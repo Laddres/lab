@@ -119,3 +119,50 @@ def parse_nacionalidade(nacionalidade):
 def parse_grau_instrucao(grau_instrucao):
     id = parse_inteiro(grau_instrucao)
     return id if (id and (id >= 0 and id <= 8)) else 0
+
+"""
+Parsers para o dataset de Candidaturas
+"""
+def parse_ano(ano):
+    try:
+        numero_inteiro = int(ano)
+        return numero_inteiro if (numero_inteiro > 0) else 0
+    except:
+        return 0
+def parse_cargo(cargo):
+    id = parse_inteiro(cargo)
+    return id if (id and (id >= 1 and id <= 13)) else None
+def parse_descricao(descricao):
+    return str(limpar_string(descricao))
+def parse_despesa_maxima(despesa_maxima):
+    try:
+        numero_inteiro = int(despesa_maxima)
+        return numero_inteiro if (numero_inteiro > 0 and numero_inteiro < 1000000000) else 0
+    except:
+        return 0
+def parse_legenda(legenda):
+    string = limpar_string(legenda)
+    return string if (string and '#' not in string) else None
+def parse_nome_urna(nome):
+    return limpar_string(nome)
+def parse_numero_candidato(numero):
+    try:
+        numero_inteiro = int(numero)
+        return numero_inteiro if (numero_inteiro > 0) else None
+    except:
+        return None
+def parse_partido(numero):
+    try:
+        numero_inteiro = int(numero)
+        return numero_inteiro if (numero_inteiro > 0) else None
+    except:
+        return None
+def parse_resultado_candidatura(resultado_candidatura):
+    id = parse_inteiro(resultado_candidatura)
+    return id if (id and (id >= 1 and id <= 12)) else None
+def parse_situacao_candidatura(situacao_candidatura):
+    id = parse_inteiro(situacao_candidatura)
+    return id if (id and (id >= 2 and id <= 19)) else None
+def parse_turno(turno):
+    id = parse_inteiro(turno)
+    return id if (id > 0) else None
