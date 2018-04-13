@@ -160,6 +160,12 @@ def parse_partido(numero):
 def parse_resultado_candidatura(resultado_candidatura):
     id = parse_inteiro(resultado_candidatura)
     return id if (id and (id >= 1 and id <= 12)) else None
+def parse_sigla_ue(numero):
+    try:
+        numero_inteiro = int(numero)
+        return numero_inteiro if (numero_inteiro > 0) else 0
+    except:
+        return 0
 def parse_situacao_candidatura(situacao_candidatura):
     id = parse_inteiro(situacao_candidatura)
     return id if (id and (id >= 2 and id <= 19)) else None
