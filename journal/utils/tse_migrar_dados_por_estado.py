@@ -47,10 +47,10 @@ def migrar_dados(ano):
         total_candidaturas = candidaturas.shape[0]
         print('Total de candidaturas em {}: {}'.format(ano, total_candidaturas))
 
-        cnx = mysql.connect(**BD_CONFIG)
-        cursor = cnx.cursor(buffered=True)
-
         for candidatura in candidaturas.itertuples():
+            cnx = mysql.connect(**BD_CONFIG)
+            cursor = cnx.cursor(buffered=True)
+
             candidato_id = _get_candidato_id(
                 cnx=cnx,
                 cursor=cursor,
@@ -168,11 +168,11 @@ def migrar_dados(ano):
                 cnx.close()
                 raise
 
+            cursor.close()
+            cnx.close()
+
             sys.stdout.write('\r{} de {}'.format((candidatura[0] + 1), total_candidaturas))
             sys.stdout.flush()
-
-        cursor.close()
-        cnx.close()
 
         sys.stdout.write('\n')
         tempo_final_estado = time.time()
