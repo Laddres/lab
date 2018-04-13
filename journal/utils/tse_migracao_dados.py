@@ -20,9 +20,9 @@ class MigracaoDadosTSE:
         'database': 'laddres'
     }
 
-    def __init__(self):
-
-    def __del__(self):
+    # def __init__(self):
+    #
+    # def __del__(self):
 
     def migrar(self, ano):
         self.cnx = mysql.connect(**self.BD_CONFIG)
