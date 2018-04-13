@@ -21,17 +21,8 @@ class MigracaoDadosTSE:
     }
 
     def __init__(self):
-        self.cnx = mysql.connect(**self.BD_CONFIG)
-
-        self.cidades = self._load(tabela='cidade')
-        self.eleicoes = self._load(tabela='eleicao')
-        self.estados = self._load(tabela='estado')
-        self.partidos = self._load(tabela='partido')
-
-        self.cnx.close()
 
     def __del__(self):
-        print('destrutor')
 
     def migrar(self, ano):
         self.cnx = mysql.connect(**self.BD_CONFIG)
@@ -71,22 +62,50 @@ class MigracaoDadosTSE:
                     cidade=candidatura.cidade_nascimento,
                     estado_id=estado_id)
                 email = parsers.parse_email(candidatura.email) if ('email' in candidaturas.columns) else None
+                id_candidato = self._get_candidato_id(
+                    cpf=candidatura.cpf,
+                    titulo_eleitoral=candidatura.titulo_eleitoral)
 
-                # Cadastrar candidato
-                query = ("INSERT INTO candidato "
-                               "(nome, data_nascimento, cpf, titulo_eleitoral, email, cidade_id, ocupacao_id, nacionalidade_id, grau_instrucao_id) "
-                               "VALUES (%(nome)s, %(data_nascimento)s, %(cpf)s, %(titulo_eleitoral)s, %(email)s, %(cidade_id)s, %(ocupacao)s, %(nacionalidade)s, %(grau_instrucao)s)")
-                atributos = {
-                    'nome': parsers.parse_nome(candidatura.nome),
-                    'data_nascimento': parsers.parse_data(candidatura.data_nascimento),
-                    'cpf': parsers.parse_cpf(candidatura.cpf),
-                    'titulo_eleitoral': parsers.parse_titulo_eleitoral(candidatura.titulo_eleitoral),
-                    'email': email,
-                    'cidade_id': cidade_id,
-                    'ocupacao': parsers.parse_ocupacao(candidatura.ocupacao),
-                    'nacionalidade': parsers.parse_nacionalidade(candidatura.nacionalidade),
-                    'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao)
-                }
+                if (id_candidato == 0):
+                    # Cadastrar candidato
+                    query = ("INSERT INTO candidato "
+                                   "(nome, data_nascimento, cpf, titulo_eleitoral, email, cidade_id, ocupacao_id, nacionalidade_id, grau_instrucao_id) "
+                                   "VALUES (%(nome)s, %(data_nascimento)s, %(cpf)s, %(titulo_eleitoral)s, %(email)s, %(cidade_id)s, %(ocupacao)s, %(nacionalidade)s, %(grau_instrucao)s)")
+                    atributos = {
+                        'nome': parsers.parse_nome(candidatura.nome),
+                        'data_nascimento': parsers.parse_data(candidatura.data_nascimento),
+                        'cpf': parsers.parse_cpf(candidatura.cpf),
+                        'titulo_eleitoral': parsers.parse_titulo_eleitoral(candidatura.titulo_eleitoral),
+                        'email': email,
+                        'cidade_id': cidade_id,
+                        'ocupacao': parsers.parse_ocupacao(candidatura.ocupacao),
+                        'nacionalidade': parsers.parse_nacionalidade(candidatura.nacionalidade),
+                        'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao)
+                    }
+                else:
+                    # Atualizar dados do candidato
+                    query = (
+                        "UPDATE candidato "
+                        "SET "
+                        "nome = %(nome)s, "
+                        "data_nascimento = %(data_nascimento)s, "
+                        "email = %(email)s, "
+                        "cidade_id = %(cidade_id)s, "
+                        "ocupacao_id = %(ocupacao)s, "
+                        "nacionalidade_id = %(nacionalidade)s, "
+                        "grau_instrucao_id = %(grau_instrucao)s "
+                        "WHERE id = %(candidato_id)s"
+                    )
+                    atributos = {
+                        'nome': parsers.parse_nome(candidatura.nome),
+                        'data_nascimento': parsers.parse_data(candidatura.data_nascimento),
+                        'email': email,
+                        'cidade_id': cidade_id,
+                        'ocupacao': parsers.parse_ocupacao(candidatura.ocupacao),
+                        'nacionalidade': parsers.parse_nacionalidade(candidatura.nacionalidade),
+                        'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao),
+                        'candidato_id': id_candidato
+                    }
 
                 try:
                     cursor.execute(query, atributos)
@@ -95,7 +114,7 @@ class MigracaoDadosTSE:
                     self._handle_exception(exception=e, row=candidatura)
 
                 # Cadastrar candidatura
-                candidato_id = cursor.lastrowid
+                candidato_id = cursor.lastrowid if (id_candidato == 0) else id_candidato
                 eleicao_id = self._get_eleicao_id(
                     ano=candidatura.ano,
                     descricao=candidatura.descricao_eleicao)
@@ -152,58 +171,71 @@ class MigracaoDadosTSE:
     def _load(self, tabela):
         query = ("SELECT * FROM " + tabela)
         return pd.read_sql(query, self.cnx)
+    def _execute_select(self, query, parametros):
+        cursor = self.cnx.cursor(buffered=True)
+        try:
+            cursor.execute(query, parametros)
+        except Exception as e:
+            cursor.close()
+            self._handle_exception(exception=e, row=query)
+        resultados = cursor.fetchall()
+        cursor.close()
+        return resultados[0][0] if len(resultados) == 1 else None
 
     def _handle_exception(self, exception, row):
         print(row)
         self.cnx.close()
         raise exception
 
+    def _get_candidato_id(self, cpf, titulo_eleitoral):
+        query = ("SELECT id FROM candidato WHERE "
+                 "cpf = %(cpf)s AND titulo_eleitoral = %(titulo_eleitoral)s")
+        parametros = {
+            'cpf': parsers.parse_cpf(cpf),
+            'titulo_eleitoral': parsers.parse_titulo_eleitoral(titulo_eleitoral)
+        }
+        cursor = self.cnx.cursor(buffered=True)
+        try:
+            cursor.execute(query, parametros)
+        except Exception as e:
+            cursor.close()
+            self._handle_exception(exception=e, row=query)
+        resultados = cursor.fetchall()
+        cursor.close()
+
+        return resultados[0][0] if len(resultados) > 0 else 0
     def _get_cidade_id(self, cidade, estado_id, sigla_ue=0):
-        try:
-            codigo_ue = int(sigla_ue)
-        except:
-            codigo_ue = 0
-
-        cidade = self.cidades.loc[
-            ((self.cidades['nome'] == cidade) | (self.cidades['codigo_tse'] == codigo_ue)) &
-            (self.cidades['estado_id'] == estado_id)]
-
-        if (len(cidade) == 1):
-            return int(cidade['id'].iloc[0])
-        else:
-            return None
+        query = ("SELECT id FROM cidade WHERE "
+                 "(nome = %(cidade)s) OR (codigo_tse = %(sigla_ue)s) "
+                 "AND (estado_id = %(estado_id)s)")
+        parametros = {
+            'cidade': parsers.parse_cidade(cidade),
+            'sigla_ue': parsers.parse_sigla_ue(sigla_ue),
+            'estado_id': estado_id
+        }
+        return self._execute_select(query=query, parametros=parametros)
     def _get_eleicao_id(self, ano, descricao):
-        try:
-            ano_int = int(ano)
-        except:
-            return None
-
-        eleicao = self.eleicoes[
-            (self.eleicoes['ano'] == ano_int) &
-            (self.eleicoes['descricao'] == descricao)]
-
-        if (len(eleicao) == 1):
-            return int(eleicao['id'].iloc[0])
-        else:
-            return None
+        query = ("SELECT id FROM eleicao WHERE "
+                 "ano = %(ano)s AND descricao = %(descricao)s")
+        parametros = {
+            'ano': parsers.parse_ano(ano),
+            'descricao': parsers.parse_descricao(descricao)
+        }
+        self._execute_select(query=query, parametros=parametros)
     def _get_estado_id(self, sigla_estado):
-        estado = self.estados[(self.estados['sigla'] == sigla_estado)]
-        if (len(estado) == 1):
-            return int(estado['id'].iloc[0])
-        else:
-            return None
+        query = ("SELECT id FROM estado WHERE "
+                 "sigla = %(sigla_estado)s")
+        parametros = {
+            'sigla_estado': parsers.parse_estado(sigla_estado)
+        }
+        return self._execute_select(query=query, parametros=parametros)
     def _get_partido_id(self, numero):
-        try:
-            numero_int = int(numero)
-        except:
-            return None
-
-        partido = self.partidos[(self.partidos['numero'] == numero_int)]
-
-        if (len(partido) == 1):
-            return int(partido['id'].iloc[0])
-        else:
-            return None
+        query = ("SELECT id FROM partido WHERE "
+                 "numero = %(numero_partido)s")
+        parametros = {
+            'numero_partido': parsers.parse_partido(numero)
+        }
+        return self._execute_select(query=query, parametros=parametros)
 
     def _get_colunas_candidatura(self, ano):
         padrao = [
