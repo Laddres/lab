@@ -137,7 +137,7 @@ def migrar_dados(ano):
             partido_id = _get_partido_id(
                 cnx=cnx,
                 cursor=cursor,
-                numero=candidatura.numero_candidato)
+                numero=candidatura.partido)
 
             query = ("INSERT INTO candidatura "
                      "(eleicao_id, turno, candidato_id, cidade_id, estado_id, numero_candidato, nome_urna, partido_id, legenda_nome, legenda_composicao, cargo_id, despesa_maxima, situacao_candidatura_id, resultado_candidatura_id) "
@@ -384,7 +384,7 @@ def _get_estado_id(cnx, cursor, sigla_estado):
 
 def _get_partido_id(cnx, cursor, numero):
     query = ("SELECT id FROM partido WHERE "
-             "sigla = %(numero_partido)s")
+             "numero = %(numero_partido)s")
     parametros = {
         'numero_partido': parsers.parse_partido(numero)
     }
