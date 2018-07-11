@@ -16,7 +16,6 @@ temp/
 *.sig
 
 pkg/
-src/
 
 ### OSX ###
 *.DS_Store
@@ -165,5 +164,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+### Code ###
+# Visual Studio Code - https://code.visualstudio.com/
+.settings/
+.vscode/
+tsconfig.json
+jsconfig.json
 
 # End of https://www.gitignore.io/api/osx,python,windows,archlinuxpackages
