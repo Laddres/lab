@@ -49,3 +49,55 @@ def obter_dados(endpoint, filtros = []):
 
     url = gerar_url(endpoint=endpoint, filtros=filtros)
     return recursao(request=requests.get(url))
+
+def obter_detalhes(endpoint, id):
+    url = '{}{}/{}'.format(url_base, endpoint, id)
+
+    request = requests.get(url)
+
+    if request.status_code != 200:
+        print('Erro ao tentar carregar dados da API')
+        return pd.DataFrame()
+
+    response = request.json()['dados']
+    df = pd.DataFrame(
+        [[
+            response['id'],
+            response['nomeCivil'],
+            response['sexo'],
+            response['urlWebsite'],
+            response['dataNascimento'],
+            response['dataFalecimento'],
+            response['ufNascimento'],
+            response['municipioNascimento'],
+            response['ultimoStatus']['data'],
+            response['ultimoStatus']['idLegislatura'],
+            response['ultimoStatus']['siglaPartido'],
+            response['ultimoStatus']['gabinete']['nome'],
+            response['ultimoStatus']['gabinete']['predio'],
+            response['ultimoStatus']['gabinete']['sala'],
+            response['ultimoStatus']['gabinete']['andar'],
+            response['ultimoStatus']['gabinete']['telefone'],
+            response['ultimoStatus']['gabinete']['email']
+        ]],
+        columns=[
+            'id',
+            'nomeCivil',
+            'sexo',
+            'urlWebsite',
+            'dataNascimento',
+            'dataFalecimento',
+            'ufNascimento',
+            'municipioNascimento',
+            'dataUltimoStatus',
+            'idLegislatura',
+            'siglaPartido',
+            'gabinete_nome',
+            'gabinete_predio',
+            'gabinete_sala',
+            'gabinete_andar',
+            'gabinete_telefone',
+            'gabinete_email'
+        ]
+    )
+    return df
