@@ -101,3 +101,24 @@ def obter_detalhes(endpoint, id):
         ]
     )
     return df
+
+def obter_votos(idVotacao):
+    votos = obter_dados('/votacoes/{}/votos'.format(idVotacao))
+
+    df = pd.DataFrame()
+    for row in votos.itertuples():
+        voto = pd.DataFrame(
+            [[
+                row.parlamentar['id'],
+                row.parlamentar['nome'],
+                row.voto,
+            ]],
+            columns=[
+                'idParlamentar',
+                'nomeParlamentar',
+                'voto',
+            ]
+        )
+        df = df.append(voto, ignore_index=True)
+
+    return df
