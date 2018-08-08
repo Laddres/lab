@@ -50,7 +50,7 @@ def obter_dados(endpoint, filtros = []):
     url = gerar_url(endpoint=endpoint, filtros=filtros)
     return recursao(request=requests.get(url))
 
-def obter_detalhes(endpoint, id):
+def obter_detalhes(endpoint, id, map_response):
     url = '{}{}/{}'.format(url_base, endpoint, id)
 
     request = requests.get(url)
@@ -60,7 +60,32 @@ def obter_detalhes(endpoint, id):
         return pd.DataFrame()
 
     response = request.json()['dados']
-    df = pd.DataFrame(
+    return map_response(response)
+
+def obter_votos(idVotacao):
+    votos = obter_dados('/votacoes/{}/votos'.format(idVotacao))
+
+    df = pd.DataFrame()
+    for row in votos.itertuples():
+        voto = pd.DataFrame(
+            [[
+                row.parlamentar['id'],
+                row.parlamentar['nome'],
+                row.voto,
+            ]],
+            columns=[
+                'idParlamentar',
+                'nomeParlamentar',
+                'voto',
+            ]
+        )
+        df = df.append(voto, ignore_index=True)
+
+    return df
+
+
+def map_deputados(response):
+    return pd.DataFrame(
         [[
             response['id'],
             response['nomeCivil'],
@@ -100,25 +125,75 @@ def obter_detalhes(endpoint, id):
             'gabinete_email'
         ]
     )
-    return df
 
-def obter_votos(idVotacao):
-    votos = obter_dados('/votacoes/{}/votos'.format(idVotacao))
-
-    df = pd.DataFrame()
-    for row in votos.itertuples():
-        voto = pd.DataFrame(
-            [[
-                row.parlamentar['id'],
-                row.parlamentar['nome'],
-                row.voto,
-            ]],
-            columns=[
-                'idParlamentar',
-                'nomeParlamentar',
-                'voto',
-            ]
-        )
-        df = df.append(voto, ignore_index=True)
-
-    return df
+def map_proposicoes(response):
+    return pd.DataFrame(
+        [[
+            response['id'],
+            response['uri'],
+            response['siglaTipo'],
+            response['idTipo'],
+            response['numero'],
+            response['ano'],
+            response['ementa'],
+            response['dataApresentacao'],
+            response['uriOrgaoNumerador'],
+            response['uriUltimoRelator'],
+            response['statusProposicao']['dataHora'],
+            response['statusProposicao']['sequencia'],
+            response['statusProposicao']['siglaOrgao'],
+            response['statusProposicao']['uriOrgao'],
+            response['statusProposicao']['regime'],
+            response['statusProposicao']['descricaoTramitacao'],
+            response['statusProposicao']['idTipoTramitacao'],
+            response['statusProposicao']['descricaoSituacao'],
+            response['statusProposicao']['idSituacao'],
+            response['statusProposicao']['despacho'],
+            response['statusProposicao']['url'],
+            response['uriAutores'],
+            response['descricaoTipo'],
+            response['ementaDetalhada'],
+            response['keywords'],
+            response['uriPropPrincipal'],
+            response['uriPropAnterior'],
+            response['uriPropPosterior'],
+            response['urlInteiroTeor'],
+            response['urnFinal'],
+            response['texto'],
+            response['justificativa']
+        ]],
+        columns=[
+            'id',
+            'uri',
+            'siglaTipo',
+            'idTipo',
+            'numero',
+            'ano',
+            'ementa',
+            'dataApresentacao',
+            'uriOrgaoNumerador',
+            'uriUltimoRelator',
+            'statusProposicao_dataHora',
+            'statusProposicao_sequencia',
+            'statusProposicao_siglaOrgao',
+            'statusProposicao_uriOrgao',
+            'statusProposicao_regime',
+            'statusProposicao_descricaoTramitacao',
+            'statusProposicao_idTipoTramitacao',
+            'statusProposicao_descricaoSituacao',
+            'statusProposicao_idSituacao',
+            'statusProposicao_despacho',
+            'statusProposicao_url',
+            'uriAutores',
+            'descricaoTipo',
+            'ementaDetalhada',
+            'keywords',
+            'uriPropPrincipal',
+            'uriPropAnterior',
+            'uriPropPosterior',
+            'urlInteiroTeor',
+            'urnFinal',
+            'texto',
+            'justificativa'
+        ]
+    )
