@@ -8,7 +8,7 @@ BD_CONFIG = {
     'database': 'laddres'
 }
 
-def database_to_dataframe(tabela, colunas_tabela, condicao):
+def database_to_dataframe(tabela, colunas_tabela, condicao = ''):
     cnx = mysql.connect(**BD_CONFIG)
 
     columns = ', '.join(colunas_tabela) if colunas_tabela else '*'
@@ -16,5 +16,7 @@ def database_to_dataframe(tabela, colunas_tabela, condicao):
         'SELECT {} FROM {} {}'.format(columns, tabela, condicao),
         con=cnx
     )
+
+    cnx.close()
 
     return df
