@@ -88,7 +88,7 @@ def migrar_dados(ano):
             else:
                 # Atualizar dados do candidato
                 query = (
-                    "UPDATE candidato2 "
+                    "UPDATE candidato "
                     "SET "
                     "nome = %(nome)s, "
                     "data_nascimento = %(data_nascimento)s, "
