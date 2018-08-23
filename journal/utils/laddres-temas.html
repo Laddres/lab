@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Laddres</title>
+
+    <style media="screen">
+      input {
+        display: block;
+        margin: 1em;
+        padding: 1em;
+        width: 80%;
+      }
+      .links div {
+        border-bottom: 1px solid #eee;
+        padding: 1em;
+      }
+      button {
+        margin: 2em 30%;
+        padding: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tema</h1>
+    <div class="tema">
+      <input type="tel" name="id" value="" placeholder="ID do Tema">
+      <input type="tel" name="idCategoria" value="" placeholder="ID da Categoria">
+      <input type="text" name="titulo" value="" placeholder="Título">
+      <input type="text" name="descricao" value="" placeholder="Descrição">
+      <input type="text" name="origemImprensa" value="" placeholder="Origem na Impresa? 'S' ou 'N'">
+      <input type="tel" name="idProposicaoCamara" value="" placeholder="ID da Proposição na Câmara">
+      <input type="tel" name="idVotacaoProposicaoCamara" value="" placeholder="ID da Votação da Proposição na Câmara">
+    </div>
+
+    <h1>Links</h1>
+    <div class="links">
+      <div class="link1">
+        <input type="text" name="titulo" value="" placeholder="Título">
+        <input type="text" name="url" value="" placeholder="Link Completo">
+        <input type="text" name="shortUrl" value="" placeholder="Link pelo bit.ly">
+      </div>
+      <div class="link2">
+        <input type="text" name="titulo" value="" placeholder="Título">
+        <input type="text" name="url" value="" placeholder="Link Completo">
+        <input type="text" name="shortUrl" value="" placeholder="Link pelo bit.ly">
+      </div>
+      <div class="link3">
+        <input type="text" name="titulo" value="" placeholder="Título">
+        <input type="text" name="url" value="" placeholder="Link Completo">
+        <input type="text" name="shortUrl" value="" placeholder="Link pelo bit.ly">
+      </div>
+    </div>
+
+    <button id="botao" onclick="gerarScript()">GERAR SCRIPT</button>
+
+    <script type="text/javascript">
+      const temas = []
+
+      function gerarScript() {
+        const tema = {
+          id: document.querySelector('.tema input[name="id"]').value,
+          idCategoria: document.querySelector('.tema input[name="idCategoria"]').value,
+          titulo: document.querySelector('.tema input[name="titulo"]').value,
+          descricao: document.querySelector('.tema input[name="descricao"]').value,
+          origemImprensa: document.querySelector('.tema input[name="origemImprensa"]').value,
+          idProposicaoCamara: document.querySelector('.tema input[name="idProposicaoCamara"]').value,
+          idVotacaoProposicaoCamara: document.querySelector('.tema input[name="idVotacaoProposicaoCamara"]').value,
+          links: [
+            {
+              idTema: document.querySelector('.tema input[name="id"]').value,
+              titulo: document.querySelector('.links .link1 input[name="titulo"]').value,
+              url: document.querySelector('.links .link1 input[name="url"]').value,
+              shortUrl: document.querySelector('.links .link1 input[name="shortUrl"]').value,
+            },
+            {
+              idTema: document.querySelector('.tema input[name="id"]').value,
+              titulo: document.querySelector('.links .link2 input[name="titulo"]').value,
+              url: document.querySelector('.links .link2 input[name="url"]').value,
+              shortUrl: document.querySelector('.links .link2 input[name="shortUrl"]').value,
+            },
+            {
+              idTema: document.querySelector('.tema input[name="id"]').value,
+              titulo: document.querySelector('.links .link3 input[name="titulo"]').value,
+              url: document.querySelector('.links .link3 input[name="url"]').value,
+              shortUrl: document.querySelector('.links .link3 input[name="shortUrl"]').value,
+            },
+          ],
+        }
+
+        const retorno = `
+df_tema = pd.DataFrame(
+    data=[{
+        'id': ${tema.id},
+        'idCategoria': ${tema.idCategoria},
+        'titulo': \'${tema.titulo}\',
+        'descricao': \'${tema.descricao}\',
+        'origemImprensa': ${tema.origemImprensa === /[sS]/g ? 'True' : 'False'},
+        'idProposicaoCamara': ${tema.idProposicaoCamara || 'None'},
+        'idVotacaoProposicaoCamara': ${tema.idVotacaoProposicaoCamara || 'None'},
+        'idProposicaoSenado': None,
+        'idVotacaoProposicaoSenado': None,
+    }],
+    columns=colunas_dataframe_tema
+)
+df_links = pd.DataFrame(
+  data=[
+      {
+          'idTema': ${tema.id},
+          'titulo': \'${tema.links[0].titulo}\',
+          'url': \'${tema.links[0].url}\',
+          'shortUrl': \'${tema.links[0].shortUrl}\',
+      },
+      {
+          'idTema': ${tema.id},
+          'titulo': \'${tema.links[1].titulo}\',
+          'url': \'${tema.links[1].url}\',
+          'shortUrl': \'${tema.links[1].shortUrl}\',
+      },
+      {
+          'idTema': ${tema.id},
+          'titulo': \'${tema.links[2].titulo}\',
+          'url': \'${tema.links[2].url}\',
+          'shortUrl': \'${tema.links[2].shortUrl}\',
+      },
+  ],
+  columns=colunas_dataframe_tema_link
+)
+
+dataframe_to_database(
+    dataframe=df_tema,
+    tabela='tema',
+    colunas_tabela=colunas_tabela_tema,
+    colunas_dataframe=colunas_dataframe_tema
+)
+dataframe_to_database(
+    dataframe=df_links,
+    tabela='tema_link',
+    colunas_tabela=colunas_tabela_tema_link,
+    colunas_dataframe=colunas_dataframe_tema_link
+)
+        `
+        console.log(retorno)
+        navigator.clipboard.writeText(retorno)
+      }
+    </script>
+  </body>
+</html>
