@@ -88,14 +88,14 @@
           ],
         }
 
-        const retorno = `
-df_tema = pd.DataFrame(
+        const retorno =
+`df_tema = pd.DataFrame(
     data=[{
         'id': ${tema.id},
         'idCategoria': ${tema.idCategoria},
         'titulo': \'${tema.titulo}\',
         'descricao': \'${tema.descricao}\',
-        'origemImprensa': ${tema.origemImprensa === /[sS]/g ? 'True' : 'False'},
+        'origemImprensa': ${tema.origemImprensa === '1' ? 'True' : 'False'},
         'idProposicaoCamara': ${tema.idProposicaoCamara || 'None'},
         'idVotacaoProposicaoCamara': ${tema.idVotacaoProposicaoCamara || 'None'},
         'idProposicaoSenado': None,
@@ -103,6 +103,13 @@ df_tema = pd.DataFrame(
     }],
     columns=colunas_dataframe_tema
 )
+dataframe_to_database(
+    dataframe=df_tema,
+    tabela='tema',
+    colunas_tabela=colunas_tabela_tema,
+    colunas_dataframe=colunas_dataframe_tema
+)
+
 df_links = pd.DataFrame(
   data=[
       {
@@ -126,20 +133,12 @@ df_links = pd.DataFrame(
   ],
   columns=colunas_dataframe_tema_link
 )
-
-dataframe_to_database(
-    dataframe=df_tema,
-    tabela='tema',
-    colunas_tabela=colunas_tabela_tema,
-    colunas_dataframe=colunas_dataframe_tema
-)
 dataframe_to_database(
     dataframe=df_links,
     tabela='tema_link',
     colunas_tabela=colunas_tabela_tema_link,
     colunas_dataframe=colunas_dataframe_tema_link
-)
-        `
+)`
         console.log(retorno)
         navigator.clipboard.writeText(retorno)
       }
