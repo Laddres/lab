@@ -15,7 +15,9 @@ AS
     candidatura.cargo_id as id_cargo,
     cargo.nome as cargo,
     grau_instrucao.descricao as grau_instrucao,
-    ocupacao.descricao as ocupacao
+    ocupacao.descricao as ocupacao,
+    genero.descricao as genero,
+    cor_raca.descricao as cor_raca
   FROM
     candidatura
       LEFT JOIN partido on candidatura.partido_id = partido.id
@@ -25,6 +27,8 @@ AS
       LEFT JOIN estado on cidade.estado_id = estado.id
       LEFT JOIN grau_instrucao on candidato.grau_instrucao_id = grau_instrucao.id
       LEFT JOIN ocupacao on candidato.ocupacao_id = ocupacao.id
+      LEFT JOIN genero on candidato.genero_id = genero.id
+      LEFT JOIN cor_raca on candidato.cor_raca_id = cor_raca.id
   WHERE
     (candidatura.eleicao_id = 202 OR candidatura.eleicao_id = 203) AND
     (
@@ -37,5 +41,8 @@ CREATE TABLE hot_dados_candidato AS SELECT * FROM view_dados_candidato;
 CREATE INDEX id_index ON hot_dados_candidato (id);
 CREATE INDEX nome_index ON hot_dados_candidato (nome);
 CREATE INDEX nome_urna_index ON hot_dados_candidato (nome_urna);
+CREATE INDEX cargo_index ON hot_dados_candidato (cargo);
+CREATE INDEX genero_index ON hot_dados_candidato (genero);
+CREATE INDEX cor_raca_index ON hot_dados_candidato (cor_raca);
 
 DROP VIEW view_dados_candidato;
