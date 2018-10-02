@@ -120,6 +120,14 @@ def parse_grau_instrucao(grau_instrucao):
     id = parse_inteiro(grau_instrucao)
     return id if (id and (id >= 0 and id <= 8)) else 0
 
+def parse_genero(genero):
+    id = parse_inteiro(genero)
+    return id if (id and (id == 2 or id == 4)) else None
+
+def parse_cor_raca(cor_raca):
+    id = parse_inteiro(cor_raca)
+    return id if (id and (id >= 1 and id <= 5)) else None
+
 """
 Parsers para o dataset de Candidaturas
 """
