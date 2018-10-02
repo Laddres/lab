@@ -72,8 +72,8 @@ def migrar_dados(ano):
             if (candidato_id == 0):
                 # Cadastrar candidato
                 query = ("INSERT INTO candidato "
-                               "(nome, data_nascimento, cpf, titulo_eleitoral, email, cidade_id, ocupacao_id, nacionalidade_id, grau_instrucao_id) "
-                               "VALUES (%(nome)s, %(data_nascimento)s, %(cpf)s, %(titulo_eleitoral)s, %(email)s, %(cidade_id)s, %(ocupacao)s, %(nacionalidade)s, %(grau_instrucao)s)")
+                               "(nome, data_nascimento, cpf, titulo_eleitoral, email, cidade_id, ocupacao_id, nacionalidade_id, grau_instrucao_id, genero_id, cor_raca_id) "
+                               "VALUES (%(nome)s, %(data_nascimento)s, %(cpf)s, %(titulo_eleitoral)s, %(email)s, %(cidade_id)s, %(ocupacao)s, %(nacionalidade)s, %(grau_instrucao)s, %(genero)s, %(cor_raca)s)")
                 atributos = {
                     'nome': parsers.parse_nome(candidatura.nome),
                     'data_nascimento': parsers.parse_data(candidatura.data_nascimento),
@@ -83,7 +83,9 @@ def migrar_dados(ano):
                     'cidade_id': cidade_id,
                     'ocupacao': parsers.parse_ocupacao(candidatura.ocupacao),
                     'nacionalidade': parsers.parse_nacionalidade(candidatura.nacionalidade),
-                    'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao)
+                    'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao),
+                    'genero': parsers.parse_genero(candidatura.genero),
+                    'cor_raca': parsers.parse_cor_raca(candidatura.cor_raca)
                 }
             else:
                 # Atualizar dados do candidato
@@ -96,7 +98,9 @@ def migrar_dados(ano):
                     "cidade_id = %(cidade_id)s, "
                     "ocupacao_id = %(ocupacao)s, "
                     "nacionalidade_id = %(nacionalidade)s, "
-                    "grau_instrucao_id = %(grau_instrucao)s "
+                    "grau_instrucao_id = %(grau_instrucao)s, "
+                    "genero_id = %(genero)s, "
+                    "cor_raca_id = %(cor_raca)s "
                     "WHERE id = %(candidato_id)s"
                 )
                 atributos = {
@@ -107,6 +111,8 @@ def migrar_dados(ano):
                     'ocupacao': parsers.parse_ocupacao(candidatura.ocupacao),
                     'nacionalidade': parsers.parse_nacionalidade(candidatura.nacionalidade),
                     'grau_instrucao': parsers.parse_grau_instrucao(candidatura.grau_instrucao),
+                    'genero': parsers.parse_genero(candidatura.genero),
+                    'cor_raca': parsers.parse_cor_raca(candidatura.cor_raca),
                     'candidato_id': candidato_id
                 }
 
@@ -371,6 +377,8 @@ def _get_colunas_candidatura(ano):
         'CD_NACIONALIDADE',
         'CD_GRAU_INSTRUCAO',
         'CD_OCUPACAO',
+        'CD_GENERO',
+        'CD_COR_RACA',
 
         'ANO_ELEICAO',
         'NR_TURNO',
@@ -465,6 +473,8 @@ def _get_map_colunas_candidatura(ano):
         'CD_NACIONALIDADE': 'nacionalidade',
         'CD_GRAU_INSTRUCAO': 'grau_instrucao',
         'CD_OCUPACAO': 'ocupacao',
+        'CD_GENERO': 'genero',
+        'CD_COR_RACA': 'cor_raca',
 
         'ANO_ELEICAO': 'ano' ,
         'NR_TURNO': 'turno' ,
