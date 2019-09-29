@@ -5,6 +5,7 @@ AS
     candidatura.candidato_id as id,
     candidato.nome,
     candidatura.nome_urna,
+    candidato.cpf,
     candidato.data_nascimento,
     candidato.foto,
     cidade.nome as cidade_natal,
